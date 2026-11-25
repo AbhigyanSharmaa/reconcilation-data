@@ -1,0 +1,19 @@
+table_id: orders
+source:
+  connection: legacy_databricks
+  table: legacy_sales.orders
+  # as_of_version: 1     # Delta time travel: compare the snapshot that was migrated.
+  #                      # Turn this on after the optional "legacy keeps loading" cell in notebook 01.
+target:
+  connection: bigquery_target
+  table: local-project.sales.orders
+
+checks: [schema, row_count, numeric, row_hash]
+primary_key: [order_id]  # source column(s) that identify a row; needed by row_hash
+
+column_mapping:          # source name: target name (an agreed rename, not a defect)
+  cust_id: customer_id
+
+column_tolerance:
+  discount:
+    numeric_abs: 0.0001

@@ -1,0 +1,7 @@
+table_id: inventory
+source:
+  connection: legacy_databricks
+  table: inventory
+target:
+  connection: target_bigquery
+  table: inventory        # does not exist in the demo target -> ERROR, run continues

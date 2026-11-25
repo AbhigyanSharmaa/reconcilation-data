@@ -1,0 +1,17 @@
+table_id: customers
+source:
+  connection: legacy_databricks
+  table: customers
+target:
+  connection: target_bigquery
+  table: customers
+checks: [schema, row_count, numeric, row_hash]
+primary_key: [customer_id]
+tolerance:
+  source_timezone: Asia/Kolkata   # legacy stored IST wall-clock time without a zone
+  target_timezone: UTC
+hash:
+  # created_ts is stored as IST text in the legacy table and as UTC in the target, so the two
+  # sides can never produce identical text. Leave it out of the hash; the numeric check already
+  # compares it with time zone conversion.
+  exclude_columns: [created_ts]

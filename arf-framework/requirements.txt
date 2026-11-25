@@ -1,0 +1,6 @@
+pyyaml>=6.0
+tzdata                               # time zone names such as Asia/Kolkata (needed on Windows)
+databricks-sql-connector[pyarrow]>=3.0
+google-cloud-bigquery>=3.10
+google-cloud-secret-manager>=2.16    # only used if tokens are kept in Secret Manager
+pytest>=7.0

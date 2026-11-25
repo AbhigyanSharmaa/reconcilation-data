@@ -1,0 +1,7 @@
+table_id: inventory
+source:
+  connection: legacy_databricks
+  table: legacy_sales.inventory
+target:
+  connection: bigquery_target
+  table: local-project.sales.inventory   # never migrated -> ARF logs an ERROR and carries on

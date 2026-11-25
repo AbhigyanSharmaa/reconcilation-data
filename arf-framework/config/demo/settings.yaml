@@ -1,0 +1,19 @@
+# Demo settings: two local SQLite files stand in for Databricks and BigQuery.
+# Run with: python -m arf demo   (it creates the files and sets ARF_DEMO_DIR)
+
+connections:
+  legacy_databricks:
+    type: sqlite
+    path: ${ARF_DEMO_DIR}/legacy_databricks.db
+    emulate: databricks          # read column types with Databricks names (BIGINT, DECIMAL(18,2)...)
+  target_bigquery:
+    type: sqlite
+    path: ${ARF_DEMO_DIR}/target_bigquery.db
+    emulate: bigquery            # read column types with BigQuery names (INT64, NUMERIC...)
+
+output:
+  sinks: [console, csv]
+  output_dir: output/demo_runs
+
+defaults:
+  checks: [schema, row_count, numeric]

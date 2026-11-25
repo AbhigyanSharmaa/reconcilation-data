@@ -1,0 +1,19 @@
+table_id: customers
+source:
+  connection: legacy_databricks
+  table: legacy_sales.customers
+target:
+  connection: bigquery_target
+  table: local-project.sales.customers
+
+checks: [schema, row_count, numeric, row_hash]
+primary_key: [customer_id]
+
+# Legacy stored created_ts as IST text; the migration turned it into a UTC TIMESTAMP.
+# That change was agreed, so it is allowed, and timestamps are compared after time zone conversion.
+# row_hash leaves created_ts out automatically (STRING vs TIMESTAMP can't produce identical text).
+allowed_type_changes:
+  - [STRING, TIMESTAMP]
+tolerance:
+  source_timezone: Asia/Kolkata
+  target_timezone: UTC

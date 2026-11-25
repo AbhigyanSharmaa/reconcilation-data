@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.pytest_cache/
+output/
+*.db
+*.log
+# never commit credentials
+*-key.json
+service-account*.json
+.env

@@ -1,0 +1,30 @@
+# ARF settings for the local Docker lab.
+#
+# The connection NAMES match arf-framework/config/settings.yaml, so the table files in
+# arf-config/tables/ have the same shape as the ones you will write for the client.
+# Only the connection TYPES differ: spark instead of databricks, and the emulator instead of Google.
+
+connections:
+  legacy_databricks:                    # plays Azure Databricks
+    type: spark
+    delta_root: /lab/data/delta         # <database>/<table>/ folders here become database.table
+    session_timezone: UTC
+    spark_conf:
+      spark.jars.ivy: /opt/ivy          # Delta jars downloaded when the image was built
+      spark.sql.warehouse.dir: /lab/data/spark-warehouse
+      spark.driver.memory: 1g
+      spark.ui.showConsoleProgress: "false"
+
+  bigquery_target:                      # plays Google BigQuery
+    type: bigquery
+    project: local-project              # matches --project in docker-compose.yml
+    api_endpoint: http://bigquery:9050  # the emulator container
+    anonymous_credentials: true         # the emulator needs no login
+    # sum_cast: NUMERIC                 # use this if the emulator rejects BIGNUMERIC
+
+output:
+  sinks: [console, csv]                 # results land in ./output on your laptop
+  output_dir: /lab/output
+
+defaults:
+  checks: [schema, row_count, numeric]

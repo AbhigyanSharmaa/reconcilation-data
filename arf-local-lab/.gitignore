@@ -1,0 +1,7 @@
+data/**
+!data/bigquery/.gitkeep
+!data/delta/.gitkeep
+output/**
+!output/.gitkeep
+.ipynb_checkpoints/
+__pycache__/

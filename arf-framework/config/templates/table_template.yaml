@@ -1,0 +1,50 @@
+# Copy this file to config/tables/<table_id>.yaml and fill it in.
+# Only table_id, source and target are required; everything else has a default.
+
+table_id: orders                         # unique name used in results
+enabled: true                            # false = skip this table
+
+source:                                  # legacy side
+  connection: databricks_legacy          # a name from settings.yaml connections
+  table: main.sales.orders               # catalog.schema.table (Unity Catalog) or schema.table
+  filter: "order_date >= '2026-01-01'"   # optional; SQL WHERE clause, same rows on both sides
+  # as_of_version: 1234                  # optional Delta time travel: freeze the legacy table
+  # as_of_timestamp: "2026-11-20 00:00:00"
+
+target:                                  # migrated side
+  connection: bigquery_target
+  table: my-gcp-project.sales.orders     # project.dataset.table
+  filter: "order_date >= '2026-01-01'"
+
+checks: [schema, row_count, numeric]     # any subset; add row_hash for row-by-row validation
+
+primary_key: [order_id]                  # source column(s) that identify a row; required for row_hash
+
+column_mapping:                          # only for renamed columns: source_name: target_name
+  cust_id: customer_id
+
+ignore_columns: [_rescued_data, etl_load_ts]   # skipped everywhere (names on either side)
+
+numeric_columns: auto      # auto = every numeric/date/timestamp column; or a list of target names
+null_count_columns: all    # all | profiled | list of target names
+
+tolerance:                 # overrides defaults in settings.yaml for this table
+  row_count_abs: 0
+  source_timezone: UTC
+
+column_tolerance:          # overrides for single columns (target names)
+  discount_rate:
+    numeric_abs: 0.0001
+
+severity:                  # overrides for this table
+  extra_column: warning
+
+hash:                      # row_hash settings (all optional)
+  columns: auto            # auto = every column with the same type on both sides, or a list of target names
+  exclude_columns: [etl_load_ts]   # columns whose value is expected to differ (load times, audit columns)
+  buckets: 256             # more buckets = smaller drill-downs on very large tables
+  max_buckets_to_inspect: 32
+  max_examples: 20         # example rows logged per kind: missing / extra / changed
+  decimal_scale: auto      # auto = the smaller scale of the two sides
+  float_digits: 6          # FLOAT/DOUBLE rounded to this many decimals before hashing
+  trim_strings: false

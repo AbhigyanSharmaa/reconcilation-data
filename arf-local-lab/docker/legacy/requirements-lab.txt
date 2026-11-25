@@ -1,0 +1,7 @@
+# Delta Lake 3.3 runs on Spark 3.5; delta-spark pins the matching pyspark version.
+delta-spark==3.3.2
+jupyterlab>=4.2
+google-cloud-bigquery>=3.25
+pyyaml>=6.0
+tzdata
+pandas>=2.0

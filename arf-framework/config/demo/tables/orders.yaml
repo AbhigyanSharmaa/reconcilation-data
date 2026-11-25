@@ -1,0 +1,14 @@
+table_id: orders
+source:
+  connection: legacy_databricks
+  table: orders
+target:
+  connection: target_bigquery
+  table: orders
+checks: [schema, row_count, numeric, row_hash]
+primary_key: [order_id]  # source column(s) that identify a row; needed by row_hash
+column_mapping:          # source name: target name
+  cust_id: customer_id
+column_tolerance:
+  discount:
+    numeric_abs: 0.0001

@@ -1,0 +1,36 @@
+# ARF local lab: two containers that imitate the Walmart migration on your laptop.
+#   legacy   = Spark + Delta Lake + JupyterLab  (plays Azure Databricks)
+#   bigquery = goccy BigQuery emulator          (plays Google BigQuery)
+#
+# Start:  docker compose up -d --build        (first build takes several minutes)
+# Open:   http://localhost:8888/lab?token=arf
+# Stop:   docker compose down                 (tables are kept in ./data)
+
+name: arf-local-lab
+
+services:
+  legacy:
+    build: ./docker/legacy
+    image: arf-lab-legacy:1.0
+    container_name: arf-legacy
+    ports:
+      - "8888:8888"            # JupyterLab
+      - "4040:4040"            # Spark UI, while a Spark session is running
+    volumes:
+      - ./:/lab                # this folder: notebooks, arf-config, data, output
+      - ../arf-framework:/arf  # the ARF project, used as-is
+    environment:
+      TZ: UTC                  # Spark hands timestamps to Python in this zone
+      PYTHONPATH: /arf         # lets notebooks `import arf`
+    depends_on:
+      - bigquery
+
+  bigquery:
+    image: ghcr.io/goccy/bigquery-emulator:latest
+    container_name: arf-bigquery
+    command: ["--project=local-project", "--database=/data/bigquery.db"]
+    ports:
+      - "9050:9050"            # REST API, used by the Python BigQuery client
+      - "9060:9060"            # gRPC Storage API (not used by ARF)
+    volumes:
+      - ./data/bigquery:/data  # emulator tables survive restarts

@@ -1,0 +1,58 @@
+# ARF settings for the real migration.
+# ${NAME} values are read from environment variables, so one file works for dev and prod
+# and no secret is ever stored here or in Git.
+
+connections:
+  databricks_legacy:
+    type: databricks
+    server_hostname: ${DATABRICKS_HOST}        # e.g. adb-1234567890123456.7.azuredatabricks.net
+    http_path: ${DATABRICKS_HTTP_PATH}         # SQL warehouse > Connection details > HTTP path
+    access_token_env: DATABRICKS_TOKEN         # personal access token, read from this env variable
+    # access_token_secret: projects/<project>/secrets/databricks-token/versions/latest   # on Composer
+    session_timezone: UTC                      # read timestamps in UTC, like BigQuery
+
+  bigquery_target:
+    type: bigquery
+    project: ${GCP_PROJECT}                    # project that runs (and pays for) the ARF queries
+    location: US                               # must match your datasets' region
+    maximum_bytes_billed: 50000000000          # 50 GB safety cap per query
+
+output:
+  sinks: [console, csv]                        # add bigquery after running sql/create_arf_tables.sql
+  output_dir: output
+  bigquery:
+    connection: bigquery_target
+    results_table: ${GCP_PROJECT}.arf.arf_results
+    exceptions_table: ${GCP_PROJECT}.arf.arf_exceptions
+
+defaults:
+  checks: [schema, row_count, numeric]
+
+  tolerance:
+    row_count_abs: 0              # rows; 0 = exact
+    row_count_pct: 0              # percent of source rows
+    null_count_abs: 0
+    null_count_pct: 0
+    numeric_abs: 0.000001         # SUM/MIN/MAX pass if |diff| <= max(numeric_abs, numeric_rel * |value|)
+    numeric_rel: 0.000000001
+    timestamp_seconds: 0          # MIN/MAX of timestamps, compared in UTC
+    source_timezone: UTC          # zone for Databricks values that carry none (strings, TIMESTAMP_NTZ)
+    target_timezone: UTC
+    # timestamp_formats: ["%Y-%m-%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"]   # extra formats for string timestamps
+
+  severity:                       # critical -> FAIL (run fails); warning -> WARN (logged only)
+    missing_column: critical
+    extra_column: warning
+    data_type: critical
+    nullability: warning
+    decimal_precision: warning
+    row_count: critical
+    numeric: critical
+    null_count: critical
+    row_hash: critical          # rows missing, extra or changed (only for tables with row_hash in checks)
+
+  # Type changes the team has agreed are fine, as [source_family, target_family]:
+  allowed_type_changes: []
+  #  - [MAP, JSON]
+
+  max_metrics_per_query: 300      # very wide tables are profiled in several queries
